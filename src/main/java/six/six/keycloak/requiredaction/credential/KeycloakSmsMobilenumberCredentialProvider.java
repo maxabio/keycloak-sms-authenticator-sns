@@ -1,5 +1,6 @@
 package six.six.keycloak.requiredaction.credential;
 
+import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.credential.*;
 import org.keycloak.models.KeycloakSession;
@@ -20,8 +21,13 @@ import java.util.Set;
 public class KeycloakSmsMobilenumberCredentialProvider implements CredentialProvider, CredentialInputValidator, CredentialInputUpdater, OnUserCache {
     public static final String MOBILE_NUMBER = "mobile_number";
     public static final String CACHE_KEY = KeycloakSmsMobilenumberCredentialProvider.class.getName() + "." + MOBILE_NUMBER;
+    private static Logger logger = Logger.getLogger(KeycloakSmsMobilenumberCredentialProvider.class);
 
     protected KeycloakSession session;
+
+    private UserCredentialStore getCredentialStore() {
+        return this.session.userCredentialManager();
+    }
 
     public KeycloakSmsMobilenumberCredentialProvider(KeycloakSession session) {
         this.session = session;
@@ -110,26 +116,42 @@ public class KeycloakSmsMobilenumberCredentialProvider implements CredentialProv
 
     @Override
     public String getType() {
-        return null;
+        logger.warn("KeycloakSmsMobilenumberCredentialProvider getType() called");
+        return MOBILE_NUMBER;
     }
 
     @Override
     public CredentialModel createCredential(RealmModel realmModel, UserModel userModel, CredentialModel credentialModel) {
-        return null;
+        logger.warn("KeycloakSmsMobilenumberCredentialProvider createCredential() called");
+        if (credentialModel.getCreatedDate() == null) {
+            credentialModel.setCreatedDate(Time.currentTimeMillis());
+        }
+        return this.getCredentialStore().createCredential(realmModel, userModel, credentialModel);
     }
 
     @Override
-    public boolean deleteCredential(RealmModel realmModel, UserModel userModel, String s) {
-        return false;
+    public boolean deleteCredential(RealmModel realmModel, UserModel userModel, String credentialId) {
+        logger.warn("KeycloakSmsMobilenumberCredentialProvider deleteCredential() called");
+        return this.getCredentialStore().removeStoredCredential(realmModel, userModel, credentialId);
     }
 
     @Override
     public CredentialModel getCredentialFromModel(CredentialModel credentialModel) {
-        return null;
+        logger.warn("KeycloakSmsMobilenumberCredentialProvider getCredentialFromModel() called");
+        credentialModel.setType(MOBILE_NUMBER);
+        return credentialModel;
     }
 
     @Override
     public CredentialTypeMetadata getCredentialTypeMetadata(CredentialTypeMetadataContext credentialTypeMetadataContext) {
-        return null;
+        logger.warn("KeycloakSmsMobilenumberCredentialProvider getCredentialTypeMetadata() called");
+        return CredentialTypeMetadata.builder()
+                .type(getType())
+                .category(CredentialTypeMetadata.Category.TWO_FACTOR)
+                .displayName(KeycloakSmsMobilenumberCredentialProviderFactory.PROVIDER_ID)
+                .helpText("sms-mobile-text")
+                .createAction(KeycloakSmsMobilenumberCredentialProviderFactory.PROVIDER_ID)
+                .removeable(false)
+                .build(session);
     }
 }

@@ -9,6 +9,7 @@ import org.jboss.logging.Logger;
 import org.keycloak.authentication.AuthenticationFlowContext;
 import org.keycloak.authentication.RequiredActionContext;
 import org.keycloak.models.AuthenticatorConfigModel;
+import org.keycloak.models.ThemeManager;
 import org.keycloak.models.UserModel;
 import org.keycloak.theme.Theme;
 import org.keycloak.theme.ThemeProvider;
@@ -138,13 +139,22 @@ public class KeycloakSmsAuthenticatorUtil {
 
     public static String getMessage(AuthenticationFlowContext context, String key){
         String result=null;
+        logger.warn("getMessage!!!");
         try {
-            ThemeProvider themeProvider = context.getSession().getProvider(ThemeProvider.class, "extending");
-            Theme currentTheme = themeProvider.getTheme(context.getRealm().getLoginTheme(), Theme.Type.LOGIN);
+            logger.warn("inside try!!!");
+            ThemeManager themeManager = context.getSession().theme();
+            if(themeManager == null) {
+                logger.warn("manager is null");
+            }
+            Theme currentTheme = themeManager.getTheme(context.getRealm().getLoginTheme(), Theme.Type.LOGIN);
             Locale locale = context.getSession().getContext().resolveLocale(context.getUser());
             result = currentTheme.getMessages(locale).getProperty(key);
         }catch (IOException e){
             logger.warn(key + "not found in messages");
+        } catch (Exception e) {
+            logger.warn("exception!!!!!!!!!!");
+            logger.warn(e.getStackTrace());
+            logger.warn(e.getMessage());
         }
         return result;
     }

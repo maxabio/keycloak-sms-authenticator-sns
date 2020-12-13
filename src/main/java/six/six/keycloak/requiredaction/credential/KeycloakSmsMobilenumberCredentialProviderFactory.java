@@ -9,9 +9,10 @@ import org.keycloak.models.KeycloakSession;
  * Created by nickpack on 15/08/2017.
  */
 public class KeycloakSmsMobilenumberCredentialProviderFactory implements CredentialProviderFactory<six.six.keycloak.requiredaction.credential.KeycloakSmsMobilenumberCredentialProvider> {
+    public static final String PROVIDER_ID = "mobile_number";
     @Override
     public String getId() {
-        return "mobile_number";
+        return PROVIDER_ID;
     }
 
     @Override

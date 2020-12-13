@@ -1,5 +1,6 @@
 package six.six.keycloak.authenticator.credential;
 
+import org.jboss.logging.Logger;
 import org.keycloak.common.util.Time;
 import org.keycloak.credential.*;
 import org.keycloak.models.KeycloakSession;
@@ -20,9 +21,14 @@ import java.util.Set;
  */
 public class KeycloakSmsAuthenticatorCredentialProvider implements CredentialProvider, CredentialInputValidator, CredentialInputUpdater, OnUserCache {
     private static final String CACHE_KEY = KeycloakSmsAuthenticatorCredentialProvider.class.getName() + "." + KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE;
+    private static final String TYPE = KeycloakSmsConstants.USR_CRED_MDL_SMS_CODE;
+    private static Logger logger = Logger.getLogger(KeycloakSmsAuthenticatorCredentialProvider.class);
 
     private final KeycloakSession session;
 
+    private UserCredentialStore getCredentialStore() {
+        return this.session.userCredentialManager();
+    }
     public KeycloakSmsAuthenticatorCredentialProvider(KeycloakSession session) {
         this.session = session;
     }
@@ -111,26 +117,42 @@ public class KeycloakSmsAuthenticatorCredentialProvider implements CredentialPro
 
     @Override
     public String getType() {
-        return null;
+        logger.warn("KeycloakSmsAuthenticatorCredentialProvider getType() called");
+        return TYPE;
     }
 
     @Override
     public CredentialModel createCredential(RealmModel realmModel, UserModel userModel, CredentialModel credentialModel) {
-        return null;
+        logger.warn("KeycloakSmsAuthenticatorCredentialProvider createCredential() called");
+        if (credentialModel.getCreatedDate() == null) {
+            credentialModel.setCreatedDate(Time.currentTimeMillis());
+        }
+        return this.getCredentialStore().createCredential(realmModel, userModel, credentialModel);
     }
 
     @Override
-    public boolean deleteCredential(RealmModel realmModel, UserModel userModel, String s) {
-        return false;
+    public boolean deleteCredential(RealmModel realmModel, UserModel userModel, String credentialId) {
+        logger.warn("KeycloakSmsAuthenticatorCredentialProvider deleteCredential() called");
+        return this.getCredentialStore().removeStoredCredential(realmModel, userModel, credentialId);
     }
 
     @Override
     public CredentialModel getCredentialFromModel(CredentialModel credentialModel) {
-        return null;
+        logger.warn("KeycloakSmsAuthenticatorCredentialProvider getCredentialFromModel() called");
+        credentialModel.setType(TYPE);
+        return credentialModel;
     }
 
     @Override
     public CredentialTypeMetadata getCredentialTypeMetadata(CredentialTypeMetadataContext credentialTypeMetadataContext) {
-        return null;
+        logger.warn("KeycloakSmsAuthenticatorCredentialProvider getCredentialTypeMetadata() called");
+        return CredentialTypeMetadata.builder()
+                .type(getType())
+                .category(CredentialTypeMetadata.Category.TWO_FACTOR)
+                .displayName(KeycloakSmsAuthenticatorCredentialProviderFactory.PROVIDER_ID)
+                .helpText("sms-authenticator-text")
+                .createAction(KeycloakSmsAuthenticatorCredentialProviderFactory.PROVIDER_ID)
+                .removeable(false)
+                .build(session);
     }
 }

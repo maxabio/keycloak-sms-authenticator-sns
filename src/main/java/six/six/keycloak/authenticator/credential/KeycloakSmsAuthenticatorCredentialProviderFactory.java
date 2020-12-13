@@ -9,9 +9,10 @@ import org.keycloak.models.KeycloakSession;
  * Created by nickpack on 09/08/2017.
  */
 public class KeycloakSmsAuthenticatorCredentialProviderFactory implements CredentialProviderFactory<KeycloakSmsAuthenticatorCredentialProvider> {
+    public static final String PROVIDER_ID = "smsCode";
     @Override
     public String getId() {
-        return "smsCode";
+        return PROVIDER_ID;
     }
 
     @Override

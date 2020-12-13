@@ -56,8 +56,19 @@ public class KeycloakSmsAuthenticator implements Authenticator {
 
     @Override
     public void authenticate(AuthenticationFlowContext context) {
+        logger.warn("authenticate called");
         logger.debug("authenticate called ... context = " + context);
         UserModel user = context.getUser();
+        try {
+            user = context.getUser();
+        } catch (Exception e) {
+            logger.warn("getting user exception");
+            logger.warn(e.getStackTrace());
+            logger.warn(e.getMessage());
+        }
+        if(user == null) {
+            logger.warn("user is null");
+        }
         AuthenticatorConfigModel config = context.getAuthenticatorConfig();
 
         boolean onlyForVerification=KeycloakSmsAuthenticatorUtil.getConfigBoolean(config, KeycloakSmsConstants.MOBILE_VERIFICATION_ENABLED);
@@ -67,6 +78,7 @@ public class KeycloakSmsAuthenticator implements Authenticator {
 
         if (onlyForVerification==false || isOnlyForVerificationMode(onlyForVerification, mobileNumber,mobileNumberVerified)){
             if (mobileNumber != null) {
+                logger.warn("mobileNumber: " + mobileNumber);
                 // The mobile number is configured --> send an SMS
                 long nrOfDigits = KeycloakSmsAuthenticatorUtil.getConfigLong(config, KeycloakSmsConstants.CONF_PRP_SMS_CODE_LENGTH, 8L);
                 logger.debug("Using nrOfDigits " + nrOfDigits);
@@ -111,6 +123,7 @@ public class KeycloakSmsAuthenticator implements Authenticator {
 
     @Override
     public void action(AuthenticationFlowContext context) {
+        logger.warn("action called ... context = " + context);
         logger.debug("action called ... context = " + context);
         CODE_STATUS status = validateCode(context);
         Response challenge = null;
